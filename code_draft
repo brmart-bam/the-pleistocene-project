@@ -1,0 +1,102 @@
+#!/usr/bin/env python
+
+import sys
+import simpy
+import random
+
+RANDOM_SEED = 42
+NUM_DEERS = 6
+GLOBAL_INT = 100000000
+DEINSULATION_TIME = 5  # random number...
+T_INTER = 3  # put a new deer into simulation every # months
+SIM_TIME = 200 # sim time in minutes, changeable/random number
+
+
+
+class Pleistocene(object):
+    """the snow will have to request deer(s) ,
+
+       When the snow gets one, the snow can start the de-insulation process and wait for it to finish...
+
+       which takes DEINSULATION_TIME units.
+    """
+    def __init__(self, num_deers, deinsulation_time):
+        self.env = simpy.Environment()
+        self.timespans = []
+        self.num_deers = num_deers
+        self.deinsulation_time = deinsulation_time
+        self.snow_value = 1200
+        #self.introduction_interval = introduction_interval
+        self.deer_limit = simpy.Resource(self.env, self.num_deers)  # Initializes a simply resource with count num_deers
+        #self.introduce_me = simpy.Resource(self.env, self.introduction_interval)  # introduce more deer
+#        self.deinsulation = self.deinsulation(snow)
+        # ALL ADDITIONAL RESOURCES GO HERE
+    
+#    def deinsulate(self, snow):
+    def deinsulate(self):
+        """The deinsulation processes. It takes the snow processes and tries to deinsulate it...."""
+        #print("Deers removed %d%% of %s's insulation." %
+        #     (random.randint(0, 82), snow))
+        yield self.env.timeout(random.randint(1, self.deinsulation_time))
+#        yield self.env.timeout(random.randint(1, self.deinsulation_time))
+
+#    def snow(self, env, name, pp):
+#        """the snow in pleistocene Park(tech. it doesn't arrive there) and requests a deer. It then starts being deinsulated, waits for it to finish then "leaves" but it actually completed so it isn't deisulated more...?"""
+#        print('%s starts grazing at %.2f.' % (name, env.now))
+#        with pp.deer.request() as request:
+#            yield request
+#            print('%s starts  deinsulation at %.2f.' % (name, env.now))
+#            yield env.process(pp.deinsulate(name))
+#            print('%s finishes deinsulation at %.2f.' % (name, env.now))
+
+#    def setup(self):
+#        """create the ppe, start it off with an intial number of deers and keep seinding them in approx. every t_inter units/months/."""
+#        ppe = PPE(env, num_deers, deinsulation_time)
+#        for i in range(6):
+#        self.env.process(snow, env, 'Snow %d' % i, ppe)
+#        while True:
+#            yield env.timeout(random.randint(t_inter -1, t_inter +1))
+#            i += 1
+#            env.process(snow(env, 'Snow %d' % i, ppe))
+#    print('Pleistocene Project Experiment')
+#    print('simulating...')
+#    random.seed(RANDOM_SEED)
+#    env = simpy.Environment()
+#    env.process(setup(env, NUM_DEERS, DEINSULATION_TIME, T_INTER))
+#    env.run(until=SIM_TIME)
+
+def deinsulate(simulator):
+    '''Utilitze deer_limit resource to remove snow'''
+    rounds = simulator.env.now
+    snow = simulator.snow_value
+    with simulator.deer_limit.request() as request:
+        yield request
+        yield simulator.env.process(simulator.deinsulate())
+#    print(simulator.deinsulation_time)
+#    print(simulator.env.now)
+#  print(snow * float(1/simulator.env.now))
+    simulator.timespans.append(simulator.env.now)
+
+def run_simulation(simulator):
+    '''Runs simulation'''
+    for i in range(1200):  # add some snow units
+        simulator.env.process(deinsulate(simulator))
+
+if __name__ == '__main__':  # main runtime for simulator
+    if len(sys.argv) < 3:  # two required arguments from cl
+        print(f'\n    USAGE: {sys.argv[0]} <num_deer (billions)> <deinsulation_time (months)>\n')
+        sys.exit(1)
+    num_deers = sys.argv[1]  # set command line argument 1, 0 is the command itself
+    deinsulation_time = sys.argv[2]  # command line argument 2
+    #introduction_interval = sys.argv[3]  # command line argument 3
+    print(f'Running Simulator using Deers={num_deers} and Deinsulation Time={deinsulation_time}...')
+    simulator = Pleistocene(int(num_deers), int(deinsulation_time))  # init main class
+    run_simulation(simulator)
+    simulator.env.run()
+    num_deinsulated = 0
+    for v in simulator.timespans:
+        if v <= 6:
+             num_deinsulated += 1
+    print(num_deinsulated+550)
+
+
